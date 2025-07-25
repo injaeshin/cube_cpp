@@ -1,0 +1,11 @@
+namespace protocol;
+
+table EchoRequest {
+    message:string;
+}
+
+table EchoResponse {
+    message:string;
+}
+
+root_type EchoRequest;

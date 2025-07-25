@@ -39,3 +39,91 @@
 
 # debug information files
 *.dwo
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.vcxproj.filters
+*.sln.docstates
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+Debug/
+Release/
+x64/
+x86/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+[Xx]64/
+[Xx]86/
+[Bb]uild/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Cursor
+.cursor/
+.specstory/
+.cursorindexingignore
+
+# Clion
+.idea/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+Makefile
+*.cbp
+
+# Build directories
+cmake-build-debug/
+build/
+out/
+install/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+third_party/
+external/
+vendor/
+node_modules/
+
+# Generated files
+*.generated.*
+*_generated.*
+
+# Test outputs
+test_results/
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Package managers
+conan/
+vcpkg/
+
+# FlatBuffers generated files
+*_generated.h
+*_generated.cpp 
+

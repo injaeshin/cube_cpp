@@ -1,0 +1,109 @@
+cmake_minimum_required(VERSION 3.20)
+project(cube_cpp)
+
+# C++ 표준 설정
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 빌드 타입 설정
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+# 라이브러리 경로 설정
+set(ASIO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/lib/asio-1_34_2)
+set(ASIO_INCLUDE_DIR ${ASIO_ROOT}/include)
+set(CONCURRENT_QUEUE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/lib/concurrentqueue-1_0_4)
+set(CONCURRENT_QUEUE_INCLUDE_DIR ${CONCURRENT_QUEUE_ROOT})
+set(CATCH2_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/lib/catch2-3_8_1)
+set(FLATBUFFERS_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/lib/flatbuffers-25_2_10)
+set(FLATBUFFERS_INCLUDE_DIR ${FLATBUFFERS_ROOT}/include)
+
+# 공통 설정 정의
+set(COMMON_INCLUDES
+    ${ASIO_INCLUDE_DIR}
+    ${FLATBUFFERS_INCLUDE_DIR}
+    ${CONCURRENT_QUEUE_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# ASIO standalone 정의
+add_definitions(-DASIO_STANDALONE -DASIO_NO_DEPRECATED)
+if(WIN32)
+    add_definitions(-D_WIN32_WINNT=0x0A00 -DWIN32_LEAN_AND_MEAN -DNOMINMAX)
+endif()
+
+# ========================================
+# 1. 코어 라이브러리 (기본 핵심 기능)
+# ========================================
+file(GLOB_RECURSE CORE_SOURCES
+    "src/core/*.cpp"
+    "src/core/*.hpp"
+)
+
+add_library(cube_core STATIC ${CORE_SOURCES})
+target_include_directories(cube_core PUBLIC ${COMMON_INCLUDES})
+
+# ========================================
+# 2. 프로토콜 라이브러리 (패킷 처리)
+# ========================================
+file(GLOB_RECURSE PROTOCOL_SOURCES
+    "src/protocol/*.cpp"
+    "src/protocol/*.hpp"
+    "src/protocol/generated/*.h"
+)
+
+add_library(cube_protocol STATIC ${PROTOCOL_SOURCES})
+target_include_directories(cube_protocol PUBLIC ${COMMON_INCLUDES})
+target_link_libraries(cube_protocol PUBLIC cube_core)
+
+# ========================================
+# 3. 게임 라이브러리 (게임 로직)
+# ========================================
+file(GLOB_RECURSE GAME_SOURCES
+    "src/game/*.cpp"
+    "src/game/*.hpp"
+)
+
+add_library(cube_game STATIC ${GAME_SOURCES})
+target_include_directories(cube_game PUBLIC ${COMMON_INCLUDES})
+target_link_libraries(cube_game PUBLIC cube_core cube_protocol)
+
+# ========================================
+# 실행파일들
+# ========================================
+
+# 메인 실행파일
+add_executable(cube src/main.cpp)
+target_link_libraries(cube PRIVATE cube_core cube_protocol cube_game)
+target_include_directories(cube PRIVATE ${COMMON_INCLUDES})
+
+# 테스트 실행파일
+add_executable(cube_test 
+    tests/test_main.cpp
+    ${CATCH2_ROOT}/catch_amalgamated.cpp
+)
+target_link_libraries(cube_test PRIVATE cube_core cube_protocol cube_game)
+target_include_directories(cube_test PRIVATE ${COMMON_INCLUDES} ${CATCH2_ROOT})
+
+# ========================================
+# 공통 컴파일 옵션
+# ========================================
+set(ALL_TARGETS cube_core cube_protocol cube_game cube cube_test)
+
+foreach(target ${ALL_TARGETS})
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /utf-8 /W4 /permissive-)
+        target_compile_definitions(${target} PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif()
+    
+    if(WIN32)
+        target_link_libraries(${target} PRIVATE ws2_32 wsock32 mswsock)
+    elseif(UNIX)
+        target_link_libraries(${target} PRIVATE pthread)
+    endif()
+endforeach()
+
+
+
+
